@@ -51,6 +51,7 @@ class ArMysql extends ArDb
         'limit' => '',
         'union' => '',
         'comment' => '',
+        'source' => 'ArModel',
     );
 
     /**
