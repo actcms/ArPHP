@@ -43,7 +43,7 @@ class ArProxy extends ArApi
      *
      * @return mixed
      */
-    protected function remoteCall($url)
+    public function remoteCall($url, $params = array())
     {
         $init = curl_init($url);
 

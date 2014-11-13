@@ -95,7 +95,7 @@ class ArApplicationWeb extends ArApplication
         if (class_exists($class)) :
             $this->_c = new $class;
             $this->_c->init();
-            $action = ($a = empty($route['a_a']) ? 'index' : $route['a_a']) . 'Action';
+            $action = ($a = empty($route['a_a']) ? AR_DEFAULT_ACTION : $route['a_a']) . 'Action';
             $this->route['a_a'] = $a;
             if (is_callable(array($this->_c, $action))) :
                 try {
