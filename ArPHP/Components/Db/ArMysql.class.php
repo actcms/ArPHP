@@ -290,6 +290,31 @@ class ArMysql extends ArDb
     }
 
     /**
+     * barch insert.
+     *
+     * @param array   $data data.
+     *
+     * @return mixed
+     */
+    public function batchInsert(array $data = array())
+    {
+        $options = $this->options;
+        // batch insert
+        $this->data($data, true);
+
+        $sql = $this->bulidInsertSql();
+
+        $this->options = $options;
+
+        $rtstatus = $this->exec($sql);
+
+        $this->lastInsertId = $this->getDbConnection()->lastInsertId();
+
+        return $this->lastInsertId ? $this->lastInsertId : $rtstatus;
+
+    }
+
+    /**
      * update.
      *
      * @param array   $data      data.
@@ -660,21 +685,45 @@ class ArMysql extends ArDb
     /**
      * where.
      *
-     * @param array $data data.
+     * @param array   $data  data.
+     * @param boolean $batch batch.
      *
      * @return mixed
      */
-    public function data(array $data)
+    public function data(array $data, $batch = false)
     {
-        $values  =  $fields    = array();
-        foreach ($data as $key => $val) :
-            if(is_scalar($val) || is_null($val)) :
-                $fields[] = $this->quoteObj($key);
-                $values[] = $this->quote($val);
-            endif;
-        endforeach;
-        $this->options['data'] = '(' . implode($fields, ',') . ') VALUES (' . implode($values, ',') . ')';
+        $values = $fields = array();
+
+        if (!$batch) :
+            foreach ($data as $key => $val) :
+                if(is_scalar($val) || is_null($val)) :
+                    $fields[] = $this->quoteObj($key);
+                    $values[] = $this->quote($val);
+                endif;
+            endforeach;
+            $this->options['data'] = '(' . implode($fields, ',') . ') VALUES (' . implode($values, ',') . ')';
+        else :
+            $fields =  array_keys($data[0]);
+            $valueString = '';
+            foreach ($data as $key => $value) :
+                $valueBundle = array();
+                foreach ($value as $val) :
+                    if(is_scalar($val) || is_null($val)) :
+                        $valueBundle[] = $this->quote($val);
+                    endif;
+                endforeach;
+
+                if ($valueString) :
+                    $valueString .= ',(' . implode($valueBundle, ',') . ')';
+                else :
+                    $valueString .= '(' . implode($valueBundle, ',') . ')';
+                endif;
+            endforeach;
+            $this->options['data'] = '(' . implode($fields, ',') . ') VALUES ' . $valueString;
+        endif;
+
         return $this;
+
     }
 
     /**
