@@ -33,6 +33,8 @@ class ArController
 {
     // assign container
     protected $assign = array();
+    // layOut file
+    protected $layOutFile = 'NOT_INIT';
 
     /**
      * init function.
@@ -129,55 +131,106 @@ class ArController
      *
      * @return mixed
      */
-    public function display($view = '', $fetch = false)
+    protected function display($view = '', $fetch = false)
     {
-        $viewPath = '';
-        $viewBasePath = arCfg('PATH.VIEW');
-        $overRide = false;
-        $absolute = false;
+        $headerFile = '';
+        $footerFile = '';
 
-        if (strpos($view, '@') === 0) :
-            $overRide = true;
-            $view = ltrim($view, '@');
+        if ($this->layOutFile === 'NOT_INIT') :
+            $headerFile = AR_APP_VIEW_PATH . 'Layout' . DS . 'header' . '.' . arCfg('TPL_SUFFIX');
+            $footerFile = AR_APP_VIEW_PATH . 'Layout' . DS . 'footer' . '.' . arCfg('TPL_SUFFIX');
+        elseif ($this->layOutFile) :
+            $headerFile = $this->layOutFile . '_header' . '.' . arCfg('TPL_SUFFIX');
+            $footerFile = $this->layOutFile . '_footer' . '.' . arCfg('TPL_SUFFIX');
         endif;
 
-        $r = Ar::a('ArApplicationWeb')->route;
-
-        if (empty($view)) :
-            $viewPath .= $r['a_c'] . DS . $r['a_a'];
-        elseif(strpos($view, '/') !== false) :
-            if (substr($view, 0, 1) == '/') :
-                $absolute = true;
-                $viewPath .= str_replace('/', DS, ltrim($view, '/'));
+        // 加载头
+        if ($headerFile) :
+            if (is_file($headerFile)) :
+                $this->fetch($headerFile);
             else :
-                $viewPath .= $r['a_c'] . DS  . str_replace('/', DS, ltrim($view, '/'));
-            endif;
-            if (substr($view, -1) == '/') :
-                $viewPath .= $r['a_a'];
-            endif;
-        else :
-            $viewPath .= $r['a_c'] . DS . $view;
-        endif;
-
-        $currentC = $tempC = $r['a_c'] . 'Controller';
-
-        $preFix = '';
-
-        if (!$absolute) :
-            while ($cP = get_parent_class($tempC)) :
-                if (!in_array(substr($cP, 0, -10), array('Ar', 'Base'))) :
-                    $preFix = substr($cP, 0, -10) . DS . $preFix;
-                    if (!$overRide && method_exists($cP, $r['a_a'] . 'Action')) :
-                        $viewPath = str_replace(substr($tempC, 0, -10) . DS, '', $viewPath);
-                    endif;
-                    $tempC = $cP;
-                else :
-                    break;
+                if ($this->layOutFile !== 'NOT_INIT') :
+                    throw new ArException("not fount layout header file : " . $headerFile, '2000');
                 endif;
-            endwhile;
+            endif;
         endif;
 
-        $viewFile = $viewBasePath . $preFix . $viewPath . '.php';
+        // 加载模板
+        $this->fetch($view, false);
+
+        // 加载尾部
+        if ($footerFile) :
+            if (is_file($footerFile)) :
+                $this->fetch($footerFile);
+            else :
+                if ($this->layOutFile !== 'NOT_INIT') :
+                    throw new ArException("not fount layout footer file : " . $footerFile, '2000');
+                endif;
+            endif;
+        endif;
+
+    }
+
+    /**
+     * fetch function.
+     *
+     * @param string  $view  view template.
+     * @param boolean $fetch fetch view template.
+     *
+     * @return mixed
+     */
+    protected function fetch($view = '', $fetch = false)
+    {
+        if (is_file($view)) :
+            $viewFile = $view;
+        else :
+            $viewPath = '';
+            $viewBasePath = arCfg('PATH.VIEW');
+            $overRide = false;
+            $absolute = false;
+
+            if (strpos($view, '@') === 0) :
+                $overRide = true;
+                $view = ltrim($view, '@');
+            endif;
+
+            $r = Ar::a('ArApplicationWeb')->route;
+
+            if (empty($view)) :
+                $viewPath .= $r['a_c'] . DS . $r['a_a'];
+            elseif(strpos($view, '/') !== false) :
+                if (substr($view, 0, 1) == '/') :
+                    $absolute = true;
+                    $viewPath .= str_replace('/', DS, ltrim($view, '/'));
+                else :
+                    $viewPath .= $r['a_c'] . DS  . str_replace('/', DS, ltrim($view, '/'));
+                endif;
+                if (substr($view, -1) == '/') :
+                    $viewPath .= $r['a_a'];
+                endif;
+            else :
+                $viewPath .= $r['a_c'] . DS . $view;
+            endif;
+
+            $currentC = $tempC = $r['a_c'] . 'Controller';
+
+            $preFix = '';
+
+            if (!$absolute) :
+                while ($cP = get_parent_class($tempC)) :
+                    if (!in_array(substr($cP, 0, -10), array('Ar', 'Base'))) :
+                        $preFix = substr($cP, 0, -10) . DS . $preFix;
+                        if (!$overRide && method_exists($cP, $r['a_a'] . 'Action')) :
+                            $viewPath = str_replace(substr($tempC, 0, -10) . DS, '', $viewPath);
+                        endif;
+                        $tempC = $cP;
+                    else :
+                        break;
+                    endif;
+                endwhile;
+            endif;
+            $viewFile = $viewBasePath . $preFix . $viewPath . '.' . arCfg('TPL_SUFFIX');
+        endif;
 
         if (is_file($viewFile)) :
             extract($this->assign);
@@ -193,7 +246,6 @@ class ArController
         else :
             throw new ArException('view : ' . $viewFile . ' not found');
         endif;
-        exit;
 
     }
 
@@ -333,6 +385,25 @@ class ArController
             );
 
         Ar::a('ArApplicationWeb')->runController($requestRoute);
+
+    }
+
+    /**
+     * start controller.
+     *
+     * @param string $layoutFileName.
+     *
+     * @return void
+     */
+    public function setLayoutFile($layoutFileName = '')
+    {
+        if ($layoutFileName) :
+            if (!is_file($layoutFileName)) :
+                $layoutFileName = AR_APP_VIEW_PATH . 'Layout' . DS . $layoutFileName;
+            endif;
+        endif;
+
+        $this->layOutFile = $layoutFileName;
 
     }
 

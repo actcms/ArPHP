@@ -12,28 +12,31 @@
  * @link     http://www.arphp.net
  */
 return array(
-        // path
-        'PATH' => array(
-            // Web服务器地址
-            'APP_SERVER_PATH' => AR_SERVER_PATH . arCfg('requestRoute.a_m') . '/',
-            'PUBLIC' => AR_SERVER_PATH . arCfg('requestRoute.a_m') . '/Public/',
-            'GPUBLIC' => AR_SERVER_PATH . 'Public/',
-            'CACHE' => AR_ROOT_PATH . arCfg('requestRoute.a_m') . DS . 'Cache' . DS,
-            'LOG' => AR_ROOT_PATH . arCfg('requestRoute.a_m') . DS . 'Log' . DS,
-            'VIEW' => AR_ROOT_PATH . arCfg('requestRoute.a_m') . DS . 'View' . DS,
-            'UPLOAD' => AR_ROOT_PATH . arCfg('requestRoute.a_m') . DS . 'Upload' . DS,
-            'EXT' => AR_ROOT_PATH . arCfg('requestRoute.a_m') . DS . 'Ext' . DS,
-        ),
+    // path
+    'PATH' => array(
+        // Web服务器地址
+        'APP_SERVER_PATH' => AR_SERVER_PATH . arCfg('requestRoute.a_m') . '/',
+        'PUBLIC' => AR_SERVER_PATH . arCfg('requestRoute.a_m') . '/Public/',
+        'GPUBLIC' => AR_SERVER_PATH . 'Public/',
+        'CACHE' => AR_ROOT_PATH . arCfg('requestRoute.a_m') . DS . 'Cache' . DS,
+        'LOG' => AR_ROOT_PATH . arCfg('requestRoute.a_m') . DS . 'Log' . DS,
+        'VIEW' => AR_ROOT_PATH . arCfg('requestRoute.a_m') . DS . 'View' . DS,
+        'UPLOAD' => AR_ROOT_PATH . arCfg('requestRoute.a_m') . DS . 'Upload' . DS,
+        'EXT' => AR_ROOT_PATH . arCfg('requestRoute.a_m') . DS . 'Ext' . DS,
+    ),
 
-        // url
-        'URL_MODE' => 'PATH',
+    // url
+    'URL_MODE' => 'PATH',
 
-        // debug
-        'DEBUG_SHOW_TRACE' => true,
-        'DEBUG_SHOW_ERROR' => true,
-        'DEBUG_SHOW_EXCEPTION' => true,
+    // debug
+    'DEBUG_SHOW_TRACE' => true,
+    'DEBUG_SHOW_ERROR' => true,
+    'DEBUG_SHOW_EXCEPTION' => true,
 
-        // 是否调试信息到日志文件
-        'DEBUG_LOG' => false,
+    // 是否调试信息到日志文件
+    'DEBUG_LOG' => false,
 
-   );
+    // 默认的模板后缀
+    'TPL_SUFFIX' => 'php',
+
+);
