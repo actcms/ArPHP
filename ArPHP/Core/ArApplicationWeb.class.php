@@ -41,7 +41,6 @@ class ArApplicationWeb extends ArApplication
      */
     public function start()
     {
-        parent::start();
         if (AR_DEBUG) :
             arComp('ext.out')->deBug('[APP_WEB_START]');
         endif;
@@ -103,7 +102,6 @@ class ArApplicationWeb extends ArApplication
                         arComp('ext.out')->deBug('|ACTION_RUN:' . $action . '|');
                     endif;
                     $this->_c->$action();
-                    exit;
                 } catch (ArException $e) {
                     if (!AR_AS_OUTER_FRAME) :
                         throw new ArException($e->getMessage());

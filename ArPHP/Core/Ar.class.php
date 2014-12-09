@@ -73,9 +73,35 @@ class Ar
         endif;
 
         if (!AR_OUTER_START) :
+            // 子项目目录
+            defined('AR_PUBLIC_CONFIG_PATH') or define('AR_PUBLIC_CONFIG_PATH', AR_ROOT_PATH . 'Conf' . DS);
+            // 目录生成
             Ar::c('url.skeleton')->generate();
-            self::setConfig('', Ar::import(AR_ROOT_PATH . 'Conf' . DS . 'public.config.php'));
+
+            // 公共配置
+            if (!is_file(AR_PUBLIC_CONFIG_PATH . 'public.config.php')) :
+                echo 'config file not found : ' . AR_PUBLIC_CONFIG_PATH . 'public.config.php';
+                exit;
+            endif;
+            self::setConfig('', Ar::import(AR_PUBLIC_CONFIG_PATH . 'public.config.php', false));
+
+            // 路由解析
             Ar::c('url.route')->parse();
+            // 子项目目录
+            defined('AR_APP_PATH') or define('AR_APP_PATH', AR_ROOT_PATH . (arCfg('requestRoute.a_m') ? arCfg('requestRoute.a_m') . DS : (AR_DEFAULT_APP_NAME ? AR_DEFAULT_APP_NAME . DS : '')));
+            // app 配置目录
+            defined('AR_APP_CONFIG_PATH') or define('AR_APP_CONFIG_PATH', AR_APP_PATH . 'Conf' . DS);
+            // 模板目录
+            defined('AR_APP_VIEW_PATH') or define('AR_APP_VIEW_PATH', AR_APP_PATH . 'View' . DS);
+            // app 控制器目录
+            defined('AR_APP_CONTROLLER_PATH') or define('AR_APP_CONTROLLER_PATH', AR_APP_PATH . 'Controller' . DS);
+
+            // 项目配置
+            $appConfigFile = AR_APP_CONFIG_PATH . 'app.config.php';
+            $appConfig = self::import($appConfigFile, true);
+            if (is_array($appConfig)) :
+                self::setConfig('', array_merge(self::getConfig(), $appConfig));
+            endif;
         else :
             Ar::c('url.skeleton')->generateIntoOther();
             $comonConfigFile = realpath(dirname(AR_MAN_PATH)) . DS . 'Conf' . DS . 'public.config.php';
@@ -120,6 +146,7 @@ class Ar
     static public function getConfig($ckey = '', $defaultReturn = array())
     {
         $rt = array();
+
         if (empty($ckey)) :
             $rt = self::$_config;
         else :
@@ -137,7 +164,6 @@ class Ar
                             $rt = $defaultReturn;
                         else :
                             $rt = null;
-
                         endif;
                         break;
                     else :
@@ -255,21 +281,11 @@ class Ar
 
         array_push(self::$autoLoadPath, $appModule);
 
-        $appConfigFile = $appModule . 'Conf' . DS . 'app.config.php';
-        $appConfig = self::import($appConfigFile, true);
-
-        if (is_array($appConfig)) :
-            self::setConfig('', array_merge(self::getConfig(), $appConfig));
-        endif;
-
         if (preg_match("#[A-Z]{1}[a-z0-9]+$#", $class, $match)) :
             $appEnginePath = $appModule . $match[0] . DS;
-
             $extPath = $appModule . 'Ext' . DS;
-
             array_push(self::$autoLoadPath, $appEnginePath, $extPath);
         endif;
-
 
         foreach (self::$autoLoadPath as $path) :
             $classFile = $path . $class . '.class.php';
@@ -279,6 +295,7 @@ class Ar
                 break;
             endif;
         endforeach;
+
         if (empty($rt)) :
             // 外部调用时其他框架还有其他处理 此处就忽略
             if (AR_AS_OUTER_FRAME || AR_OUTER_START) :
@@ -315,6 +332,7 @@ class Ar
     static public function import($path, $allowTry = false)
     {
         static $holdFile = array();
+
         if (strpos($path, DS) === false) :
             $fileName = str_replace(array('c.', 'ext.', 'app.', '.'), array('Controller.', 'Extensions.', rtrim(AR_ROOT_PATH, DS) . '.', DS), $path) . '.class.php';
         else :
@@ -386,7 +404,9 @@ class Ar
         if (!AR_DEBUG || !(error_reporting() & $errno)) :
             return;
         endif;
+
         $errMsg = '';
+
         switch ($errno) {
         case E_USER_ERROR:
             $errMsg .= "<b style='color:red;'>ERROR</b> [$errno] $errstr<br />\n";
@@ -410,6 +430,7 @@ class Ar
             $errMsg .= " on line $errline in file $errfile <br />\n";
             break;
         }
+
         if ($errMsg) :
             if (arCfg('DEBUG_SHOW_TRACE')) :
                 arComp('ext.out')->deBug($errMsg, 'TRACE');
@@ -425,6 +446,34 @@ class Ar
         endif;
 
         return true;
+
+    }
+
+    /**
+     * shutDown function.
+     *
+     * @return void
+     */
+    public static function shutDown()
+    {
+        if (AR_RUN_AS_SERVICE_HTTP) :
+            return;
+        endif;
+
+        if (AR_DEBUG) :
+            if (arCfg('DEBUG_SHOW_EXCEPTION')) :
+                arComp('ext.out')->deBug('', 'EXCEPTION', true);
+            endif;
+
+            if (arCfg('DEBUG_SHOW_ERROR')) :
+                arComp('ext.out')->deBug('', 'ERROR', true);
+            endif;
+
+            if (arCfg('DEBUG_SHOW_TRACE'))  :
+                arComp('ext.out')->deBug('[SHUTDOWN]', 'TRACE', true);
+            endif;
+
+        endif;
 
     }
 

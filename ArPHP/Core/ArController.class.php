@@ -78,7 +78,11 @@ class ArController
     public function assign(array $vals)
     {
         foreach ($vals as $key => $val) :
-            $this->assign[$key] = $val;
+            if (is_array($val) && isset($this->assign[$key])) :
+                $this->assign[$key] = array_merge($this->assign[$key], $val);
+            else :
+                $this->assign[$key] = $val;
+            endif;
         endforeach;
 
     }

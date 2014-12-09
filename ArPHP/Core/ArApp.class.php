@@ -64,13 +64,19 @@ class ArApp
     static private function _initComponents(array $config)
     {
         foreach ($config as $driver => $component) :
+            if (!is_array($component)) :
+                continue;
+            endif;
+
             if (!empty($component['lazy']) && $component['lazy'] == true) :
                 continue;
             endif;
+
             foreach ($component as $engine => $cfg) :
                 if (!empty($cfg['lazy']) && $cfg['lazy'] == true || $engine == 'lazy') :
                     continue;
                 endif;
+
                 $configC = !empty($cfg['config']) ? $cfg['config'] : array();
 
                 Ar::setC($driver . '.' . $engine, $configC);
