@@ -1,0 +1,43 @@
+<?php
+    $sourceObj = $loader['this'];
+    $plugins = explode(',', $loader['plugin']);
+
+    if (is_array($plugins)) :
+        foreach ($plugins as $plugin) :
+            switch ($plugin) {
+                case 'bdeditor':
+                    // 加载百度 editor seg
+                    $sourceObj->assign(array('baiduEditorInvoke' => true));
+                    break;
+                case 'uploadify':
+                    // 动态 加载的 css
+                    $sourceObj->assign(array('cssInsertBundles' => array('../js/uploadify/uploadify')));
+                    // 动态加载的js
+                    $sourceObj->assign(array('jsInsertBundles' => array('uploadify/jquery.uploadify.min')));
+                    break;
+                case 'layer':
+                    // layer弹出层代码
+                    $sourceObj->assign(array('jsInsertBundles' => array('layer/layer.min', 'layer/extend/layer.ext')));
+                    break;
+                // 日期选择
+                case 'datepicker':
+                    $sourceObj->assign(array('cssInsertBundles' => array('../js/Zebra_Datepicker-master/public/css/default')));
+                    $sourceObj->assign(array('jsInsertBundles' => array('Zebra_Datepicker-master/public/javascript/zebra_datepicker')));
+                    break;
+                // 选择地区
+                case 'select_area':
+                    $sourceObj->assign(array('jsSeg' => 'select_area'));
+                    break;
+                // 选择分类
+                case 'select_cate':
+                    $sourceObj->assign(array('jsSeg' => 'select_cate'));
+                    break;
+                // 图片放大镜效果
+                case 'zoom':
+                    $sourceObj->assign(array('jsInsertBundles' => array('elevatezoom-master/jquery.elevatezoom')));
+                default:
+                    # code...
+                    break;
+            }
+        endforeach;
+    endif;

@@ -1,0 +1,347 @@
+<style>
+.a_showdow {
+    background: #eee;
+    text-decoration: none;
+}
+.portlet-tabs > .nav-tabs > li {
+    float: left;
+}
+.portlet > .portlet-title > .caption {
+    float: right;
+}
+.tab-content>.tab-pane, .pill-content>.pill-pane {
+    display: block;
+}
+
+</style>
+
+<div class="portlet box green tabbable" style="width:500px;display:none" id="ar_select_area">
+    <div class="portlet-title">
+        <div class="caption"><i class="icon-reorder"></i>地区选择框</div>
+    </div>
+    <div class="portlet-body">
+        <div class=" portlet-tabs">
+            <ul class="nav nav-tabs">
+                <li class="portlet_tab_select" akey="country"><a>国家</a></li>
+                <li class="portlet_tab_select" akey="province"><a>省/州</a></li>
+                <li class="active portlet_tab_select " akey="city"><a>城市</a></li>
+                <li class="portlet_tab_select" akey="county"><a>区县</a></li>
+            </ul>
+            <div class="tab-content">
+                <div name="div-tab-pane" class="tab-pane" id="portlet_tab_0">
+                    <ul class="nav nav-tabs" id="ul-country">
+                    </ul>
+                </div>
+                <div name="div-tab-pane" class="tab-pane active" id="portlet_tab_1">
+                  <ul class="nav nav-tabs" id="ul-province">
+                  </ul>
+                </div>
+                <div name="div-tab-pane" class="tab-pane active" id="portlet_tab_2">
+                  <ul class="nav nav-tabs" id="ul-city">
+                  </ul>
+                </div>
+                <div name="div-tab-pane" class="tab-pane" id="portlet_tab_3">
+                    <ul class="nav nav-tabs" id="ul-county">
+                    </ul>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// 获取地区信息
+function getRegionData(pid, ajaxCallBack, obj)
+{
+    if (obj !== undefined) {
+        $(obj).parent().parent().find("a").removeClass("a_showdow");
+        $(obj).addClass("a_showdow");
+        // 最后一级不加载数据了
+        if ($(obj).parent().parent().parent().find('#select-confirm-area').length > 0) {
+            JSV.LAST_SELECT_REGION_ID = pid;
+            return;
+        } else {
+            showTab($(obj).parent().parent().parent().index());
+        }
+    }
+
+    if (ajaxCallBack == 'country') {
+        $("#ul-province").html('');
+        $("#ul-city").html('');
+        $("#ul-county").html('');
+    } else if (ajaxCallBack == 'province') {
+        $("#ul-city").html('');
+        $("#ul-county").html('');
+    } else if (ajaxCallBack == 'city') {
+        $("#ul-county").html('');
+    }
+
+    $.get(JSV.PATH_SERVER + 'Api/getAllregionByPid', {pid: pid}, function (res){
+        if (res.data) {
+            if (ajaxCallBack) {
+                if (ajaxCallBack) {
+                    putUlData[ajaxCallBack](res.data);
+                }
+            } else {
+                // 这里的pid 就是用户点击的最终选择id
+                JSV.LAST_SELECT_REGION_ID = pid;
+            }
+        } else {
+            return null;
+        }
+
+    }, 'json');
+
+}
+
+putUlData = {
+    'country' : function(data) {
+        if (data) {
+            var liStr = activeClass = '';
+            for (i in data) {
+                if (JSV.INIT_SELECT_COUNTRY != undefined && data[i]['rid'] == JSV.INIT_SELECT_COUNTRY[0]) {
+                    activeClass =' class = "a_showdow" ';
+                } else {
+                    activeClass = '';
+                }
+
+                liStr += '<li><a '+ activeClass +'rid="'+data[i]['rid']+'" onclick="getRegionData('+data[i]['rid']+', \'province\', this)">'+data[i]['name']+'</a></li>';
+            }
+            $("#ul-country").html(liStr);
+            $("#ul-province").html('');
+            JSV.LAST_SELECT_REGION_ID = null;
+        }
+
+    },
+    'province' : function(data) {
+        if (data) {
+            var liStr = activeClass = '';
+            for (i in data) {
+                if (JSV.INIT_SELECT_PROVINCE != undefined && data[i]['rid'] == JSV.INIT_SELECT_PROVINCE[0]) {
+                    activeClass =' class = "a_showdow" ';
+                } else {
+                    activeClass = '';
+                }
+
+                liStr += '<li><a '+ activeClass +'rid="'+data[i]['rid']+'" onclick="getRegionData('+data[i]['rid']+', \'city\', this)">'+data[i]['name']+'</a></li>';
+            }
+            $("#ul-province").html(liStr);
+            $("#ul-city").html('');
+            JSV.LAST_SELECT_REGION_ID = null;
+        }
+
+    },
+    'city' : function (data) {
+        if (data) {
+            var liStr = activeClass = '';
+            for (i in data) {
+                if (JSV.INIT_SELECT_CITY != undefined && data[i]['rid'] == JSV.INIT_SELECT_CITY[0]) {
+                    activeClass =' class = "a_showdow" ';
+                } else {
+                    activeClass = '';
+                activeClass}
+
+                liStr += '<li><a ' + activeClass + 'rid="'+data[i]['rid']+'" onclick="getRegionData('+data[i]['rid']+', \'county\',this)">'+data[i]['name']+'</a></li>';
+            }
+            $("#ul-city").html(liStr);
+            JSV.LAST_SELECT_REGION_ID = null;
+        }
+
+
+    },
+
+    'county': function (data) {
+        if (data) {
+            var liStr = activeClass = '';
+            for (i in data) {
+                if (JSV.INIT_SELECT_COUNTY != undefined && data[i]['rid'] == JSV.INIT_SELECT_COUNTY[0]) {
+                    activeClass =' class = "a_showdow" ';
+                } else {
+                    activeClass = '';
+                }
+                liStr += '<li><a ' + activeClass + ' rid="'+data[i]['rid']+'" onclick="getRegionData('+data[i]['rid']+', false, this)">'+data[i]['name']+'</a></li>';
+            }
+            $("#ul-county").html(liStr);
+        }
+    },
+};
+
+// 点击切换
+$(".portlet_tab_select").click(function () {
+    showTab($(this).index());
+});
+
+
+// 显示索引值
+function showTab(index, hide, level)
+{
+    if (level) {
+        if (index > level - 1) {
+            return false;
+        }
+    }
+
+    $(".portlet_tab_select").removeClass('active');
+    $(".portlet_tab_select").eq(index).addClass('active');
+    $(".tab-pane").removeClass('active');
+
+    if (hide) {
+        $(".portlet_tab_select :gt("+index+")").hide();
+        $("[name='div-tab-pane']").each(function(){
+            //alert();
+            if (index < $(this).index()) {
+                $(this).hide();
+            }
+        });
+
+        var buttonStr = '<div class="text-center"><button type="btn" class="btn btn-success select-confirm-area" id="select-confirm-area">确定选择</button></div>';
+        $('#select-confirm-area').remove();
+        $(".tab-pane").eq(index).append(buttonStr);
+
+    }
+
+    putUlData[$(".portlet_tab_select").eq(index).attr('akey')](false);
+
+    $(".tab-pane").eq(index).addClass('active').show();
+
+}
+
+// 包装地址选择器插件
+(function($){
+    $.fn.extend({
+        select_area: function (options) {
+            var opts, level;
+            var defaults = {
+                // 地址选中完毕时调用
+                onSelected: function (res) {
+                    // alert('ok');
+                },
+                // 初始化
+                onInit: function (res) {
+
+                },
+                // 参数
+                'rid': 0,
+                // 选择级数
+                level: 4,
+            }
+            opts = $.extend({},defaults, options);
+            init = function (opts) {
+                JSV.LAST_SELECT_REGION_ID = null;
+                JSV.INIT_SELECT_COUNTY = null;
+                JSV.INIT_SELECT_CITY = null;
+                JSV.INIT_SELECT_PROVINCE = null;
+                JSV.INIT_SELECT_COUNTRY = null;
+                //alert(opts.rid);
+                if (opts.rid) {
+                    $.get(JSV.PATH_SERVER + 'Api/getAllregionBySid', {sid: opts.rid}, function (res) {
+                            // 地区初始化赋值
+                            var init_select = [];
+                            var resCopy = res.data;
+                            for (var i = 0; i < opts.level; i++) {
+                                init_select.push([resCopy.rid, resCopy.name]);
+                                resCopy = resCopy.parent;
+                            }
+                            var l = init_select.length;
+                            for (var j = 0; j < l; j++) {
+                                if (j == 0) {
+                                    JSV.INIT_SELECT_COUNTRY = init_select.pop();
+                                } else if (j == 1) {
+                                    JSV.INIT_SELECT_PROVINCE = init_select.pop();
+                                } else if (j == 2) {
+                                    JSV.INIT_SELECT_CITY = init_select.pop();
+                                } else if (j == 3) {
+                                    JSV.INIT_SELECT_COUNTY = init_select.pop();
+                                }
+                            }
+
+                getRegionData(0, 'country');
+                            opts.onInit(res.data);
+                            if (JSV.INIT_SELECT_COUNTRY != undefined && JSV.INIT_SELECT_COUNTRY[0]){
+                    getRegionData(JSV.INIT_SELECT_COUNTRY[0], 'province');
+                    if (JSV.INIT_SELECT_PROVINCE != undefined && JSV.INIT_SELECT_PROVINCE[0]) {
+                        getRegionData(JSV.INIT_SELECT_PROVINCE[0], 'city');
+                        if (JSV.INIT_SELECT_CITY != undefined && JSV.INIT_SELECT_CITY[0]) {
+                            getRegionData(JSV.INIT_SELECT_CITY[0], 'county');
+                        }
+                    }
+                }
+
+
+
+                        }, 'json');
+                } else {
+                    // 第一次执行
+                    getRegionData(0, 'country');
+                }
+
+            }
+
+            // 初始化
+            init(opts);
+
+            $(this).click(function() {
+                init(opts);
+                level = opts.level;
+                // 隐藏多余的地址栏
+                $(".portlet_tab_select a").show();
+                $(".tab-pane").show();
+                $(".tab-pane ul").show();
+                var tabMaxIndex = level - 1;
+                showTab(tabMaxIndex, true);
+                if (opts.rid) {
+                   showTab(tabMaxIndex);
+                } else {
+                    showTab(0);
+                }
+
+            $("#select-confirm-area").click(function () {
+                if (JSV.LAST_SELECT_REGION_ID) {
+                    var sid = JSV.LAST_SELECT_REGION_ID;
+                    layer.closeAll();
+                    $.get(JSV.PATH_SERVER + 'Api/getAllregionBySid', {sid: sid}, function (res) {
+                        opts.onSelected(res.data);
+                    }, 'json');
+                    //JSV.LAST_SELECT_REGION_ID = null;
+                    //JSV.INIT_SELECT_COUNTY = null;
+                    //JSV.INIT_SELECT_CITY = null;
+                    //JSV.INIT_SELECT_PROVINCE = null;
+                    //JSV.INIT_SELECT_COUNTRY = null;
+                } else {
+                    layer.msg('必须选择一个地区');
+                }
+            });
+
+
+                //JSV.LAST_SELECT_REGION_ID = null;
+                 //   JSV.INIT_SELECT_COUNTY = null;
+                  //  JSV.INIT_SELECT_CITY = null;
+                   // JSV.INIT_SELECT_PROVINCE = null;
+                    //JSV.INIT_SELECT_COUNTRY = null;
+
+
+                lid = $.layer({
+                    offset: ['0px', ''],
+                    area:['500px','auto'],
+                    type:1,
+                    'page':{
+                        'dom': '#ar_select_area'
+                    }
+                });
+            });
+        }
+    })
+})(jQuery);
+/**
+ *usage
+
+$("#select-confirm-area-test").select_area({
+    onSelected: function(res) {
+        alert(res.name);
+    }
+});
+
+*/
+
+</script>
