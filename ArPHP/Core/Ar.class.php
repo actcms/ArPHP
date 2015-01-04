@@ -153,6 +153,12 @@ class Ar
             if (strpos($ckey, '.') === false) :
                 if (isset(self::$_config[$ckey])) :
                     $rt = self::$_config[$ckey];
+                else :
+                    if (func_num_args() > 1) :
+                        $rt = $defaultReturn;
+                    else :
+                        $rt = null;
+                    endif;
                 endif;
             else :
                 $cE = explode('.', $ckey);

@@ -231,11 +231,14 @@ function arSeg($segment)
         throw new ArException("segment must be an array");
     endif;
 
-    $keyBundle = array_keys($segment);
-    $segKey = $keyBundle[0];
-    $$segKey = $segment[$segKey];
-    $segFile = AR_PUBLIC_CONFIG_PATH . 'Seg' . DS . $segKey . '.seg';
-
+    if (empty($segment['segKey'])) :
+        $keyBundle = array_keys($segment);
+        $segKey = $keyBundle[0];
+    else :
+        $segKey = $segment['segKey'];
+    endif;
+    extract($segment);
+    $segFile = arCfg('DIR.SEG') . str_replace('/', DS, $segKey) . '.seg';
     if (!is_file($segFile)) :
         throw new ArException("segment file " . $segFile . ' not found');
     endif;

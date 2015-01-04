@@ -264,7 +264,7 @@ class ArController
      */
     public function redirect($r = '', $show = '', $time = '0')
     {
-        return arComp('url.route')->redirect($r, $show, $time);
+        return arComp('url.route')->redirect($r, $show, $time, arCfg('SEG_REDIRECT_DEFAULT', 'default'));
 
     }
 
@@ -279,7 +279,7 @@ class ArController
      */
     public function redirectSuccess($r = '', $show = '', $time = '1')
     {
-        $this->redirect($r, '成功:' . $show, $time);
+        return arComp('url.route')->redirect($r, '操作成功! ' . $show, $time, arCfg('SEG_REDIRECT_SUCCESS', 'success'));
 
     }
 
@@ -294,7 +294,7 @@ class ArController
      */
     public function redirectError($r = '', $show = '' , $time = '4')
     {
-        $this->redirect($r, '失败:' . $show, $time);
+        return arComp('url.route')->redirect($r, '操作失败! ' . $show, $time, arCfg('SEG_REDIRECT_ERROR', 'error'));
 
     }
 

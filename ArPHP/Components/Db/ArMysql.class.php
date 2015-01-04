@@ -259,8 +259,10 @@ class ArMysql extends ArDb
      */
     public function insert(array $data = array(), $checkData = false)
     {
+        if (empty($this->options['source'])) :
+            $this->options['source'] = 'ArModel';
+        endif;
         $options = $this->options;
-
         if (ArModel::model($this->options['source'])->insertCheck($data)) :
 
             $data = ArModel::model($this->options['source'])->formatData($data);

@@ -18,11 +18,23 @@ return array(
         'APP_SERVER_PATH' => AR_SERVER_PATH . arCfg('requestRoute.a_m') . '/',
         'PUBLIC' => AR_SERVER_PATH . arCfg('requestRoute.a_m') . '/Public/',
         'GPUBLIC' => AR_SERVER_PATH . 'Public/',
+        // 兼容以前
         'CACHE' => AR_ROOT_PATH . arCfg('requestRoute.a_m') . DS . 'Cache' . DS,
         'LOG' => AR_ROOT_PATH . arCfg('requestRoute.a_m') . DS . 'Log' . DS,
         'VIEW' => AR_ROOT_PATH . arCfg('requestRoute.a_m') . DS . 'View' . DS,
         'UPLOAD' => AR_ROOT_PATH . arCfg('requestRoute.a_m') . DS . 'Upload' . DS,
         'EXT' => AR_ROOT_PATH . arCfg('requestRoute.a_m') . DS . 'Ext' . DS,
+    ),
+
+    // dir
+    'DIR' => array(
+        'CACHE' => AR_ROOT_PATH . arCfg('requestRoute.a_m') . DS . 'Cache' . DS,
+        'LOG' => AR_ROOT_PATH . arCfg('requestRoute.a_m') . DS . 'Log' . DS,
+        'VIEW' => AR_ROOT_PATH . arCfg('requestRoute.a_m') . DS . 'View' . DS,
+        'UPLOAD' => AR_ROOT_PATH . arCfg('requestRoute.a_m') . DS . 'Upload' . DS,
+        'EXT' => AR_ROOT_PATH . arCfg('requestRoute.a_m') . DS . 'Ext' . DS,
+        // 片段目录
+        'SEG' => AR_PUBLIC_CONFIG_PATH . 'Seg' . DS,
     ),
 
     // url

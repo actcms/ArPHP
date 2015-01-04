@@ -46,6 +46,29 @@ class ArRoute extends ArComponent
     }
 
     /**
+     * pathToDir.
+     *
+     * @param string $path path.
+     *
+     * @return string
+     */
+    public function pathToDir($path)
+    {
+        if (strpos($path, '/') === 0) :
+            $dir = rtrim(realpath($_SERVER['DOCUMENT_ROOT']), DS) . DS;
+            $path = trim($path, '/');
+            $path = str_replace('/', DS, $path);
+            $dir = $dir . $path;
+        else :
+            $path = str_replace('/', DS, $path);
+            $dir = AR_ROOT_PATH . $path;
+        endif;
+
+        return $dir;
+
+    }
+
+    /**
      * host.
      *
      * @param boolean $scriptName return scriptname.
@@ -261,13 +284,14 @@ class ArRoute extends ArComponent
     /**
      * redirect function.
      *
-     * @param mixed  $r    route.
+     * @param mixed  $r         route.
      * @param string $show show string.
      * @param string $time time display.
+     * @param string $seg  seg  seg redirect.
      *
      * @return mixed
      */
-    public function redirect($r = '', $show = '', $time = '0')
+    public function redirect($r = '', $show = '', $time = '0', $seg = '')
     {
         if (is_string($r)) :
             $url = $r;
@@ -276,7 +300,7 @@ class ArRoute extends ArComponent
             $param = empty($r[1]) ? array() : $r[1];
             $url = arComp('url.route')->createUrl($route, $param);
         endif;
-
+        // search seg if found then render
         $redirectUrl = <<<str
 <html>
 <head>
@@ -288,6 +312,16 @@ $show<a href="$url">立即跳转</a>
 </body>
 </html>
 str;
+        if ($seg) :
+            // filename
+            $seg = 'Redirect/' . $seg;
+            try {
+                arSeg(array('segKey' => $seg, 'url' => $url, 'show' => $show, 'time' => $time));
+                exit;
+            } catch (ArException $e) {
+
+            }
+        endif;
         echo $redirectUrl;
         exit;
 
