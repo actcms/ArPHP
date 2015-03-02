@@ -84,8 +84,10 @@ class ArFile extends ArCache
             if ($this->checkExpire($cacheFile)) :
                 $data = null;
                 $this->del($key);
+                $data = null;
+            else :
+                $data = $this->decrypt(file_get_contents($cacheFile, false, null, 10));
             endif;
-            $data = $this->decrypt(file_get_contents($cacheFile, false, null, 10));
         else :
             $data = null;
         endif;

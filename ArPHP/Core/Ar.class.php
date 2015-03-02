@@ -72,9 +72,9 @@ class Ar
             arComp('ext.out')->deBug('[START]');
         endif;
 
+        // 子项目目录
+        defined('AR_PUBLIC_CONFIG_PATH') or define('AR_PUBLIC_CONFIG_PATH', AR_ROOT_PATH . 'Conf' . DS);
         if (!AR_OUTER_START) :
-            // 子项目目录
-            defined('AR_PUBLIC_CONFIG_PATH') or define('AR_PUBLIC_CONFIG_PATH', AR_ROOT_PATH . 'Conf' . DS);
             // 目录生成
             Ar::c('url.skeleton')->generate();
 
@@ -100,18 +100,18 @@ class Ar
             $appConfigFile = AR_APP_CONFIG_PATH . 'app.config.php';
             $appConfig = self::import($appConfigFile, true);
             if (is_array($appConfig)) :
-                self::setConfig('', array_merge(self::getConfig(), $appConfig));
+                self::setConfig('', arComp('format.format')->arrayMergeRecursiveDistinct(self::getConfig(), $appConfig));
             endif;
         else :
             Ar::c('url.skeleton')->generateIntoOther();
             $comonConfigFile = realpath(dirname(AR_MAN_PATH)) . DS . 'Conf' . DS . 'public.config.php';
-            self::$_config = array_merge(
+            self::$_config = arComp('format.format')->arrayMergeRecursiveDistinct(
                 Ar::import($comonConfigFile, true),
                 Ar::import(AR_MAN_PATH . 'Conf' . DS . 'public.config.php')
             );
         endif;
 
-        self::$_config = array_merge(
+        self::$_config = arComp('format.format')->arrayMergeRecursiveDistinct(
             Ar::import(AR_CONFIG_PATH . 'default.config.php', true),
             self::$_config
         );
@@ -195,7 +195,27 @@ class Ar
     static public function setConfig($ckey = '', $value = array())
     {
         if (!empty($ckey)) :
-            self::$_config[$ckey] = $value;
+            if (strpos($ckey, '.') === false) :
+                self::$_config[$ckey] = $value;
+            else :
+                $cE = explode('.', $ckey);
+                $rt = self::$_config;
+                $nowArr = array();
+                $length = count($cE);
+                for ($i = $length - 1; $i >= 0; $i--) :
+                    if ($i == $length - 1) :
+                        $nowArr = array($cE[$i] => $value);
+                    else :
+                        $tem = $nowArr;
+                        $nowArr = array();
+                        $nowArr[$cE[$i]] = $tem;
+                    endif;
+                endfor;
+                self::$_config = arComp('format.format')->arrayMergeRecursiveDistinct(
+                    self::$_config,
+                    $nowArr
+                );
+            endif;
         else :
             self::$_config = $value;
         endif;
@@ -412,12 +432,14 @@ class Ar
         endif;
 
         $errMsg = '';
-
+        // 服务器级别错误
+        $serverError = false;
         switch ($errno) {
         case E_USER_ERROR:
             $errMsg .= "<b style='color:red;'>ERROR</b> [$errno] $errstr<br />\n";
             $errMsg .= "  Fatal error on line $errline in file $errfile";
             $errMsg .= ", PHP " . PHP_VERSION . " (" . PHP_OS . ")<br />\n";
+            $serverError = true;
             break;
 
         case E_USER_WARNING:
@@ -436,18 +458,17 @@ class Ar
             $errMsg .= " on line $errline in file $errfile <br />\n";
             break;
         }
-
         if ($errMsg) :
             if (arCfg('DEBUG_SHOW_TRACE')) :
                 arComp('ext.out')->deBug($errMsg, 'TRACE');
             else :
                 if (arCfg('DEBUG_SHOW_ERROR')) :
-                    arComp('ext.out')->deBug($errMsg, 'ERROR');
+                    if ($serverError === true) :
+                        arComp('ext.out')->deBug($errMsg, 'SERVER_ERROR');
+                    else :
+                        arComp('ext.out')->deBug($errMsg, 'ERROR');
+                    endif;
                 endif;
-            endif;
-
-            if ($errno == E_USER_ERROR) :
-                exit(1);
             endif;
         endif;
 
@@ -473,6 +494,7 @@ class Ar
 
             if (arCfg('DEBUG_SHOW_ERROR')) :
                 arComp('ext.out')->deBug('', 'ERROR', true);
+                arComp('ext.out')->deBug('', 'SERVER_ERROR', true);
             endif;
 
             if (arCfg('DEBUG_SHOW_TRACE'))  :

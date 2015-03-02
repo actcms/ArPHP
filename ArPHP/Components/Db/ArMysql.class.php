@@ -267,7 +267,11 @@ class ArMysql extends ArDb
 
             $data = ArModel::model($this->options['source'])->formatData($data);
 
+
             if (!empty($data)) :
+
+                $this->options = $options;
+
                 if ($checkData) :
                     $data = arComp('format.format')->filterKey($this->getColumns(), $data);
                 endif;

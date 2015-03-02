@@ -160,7 +160,7 @@ class ArController
         endif;
 
         // 加载模板
-        $this->fetch($view, false);
+        $this->fetch($view, $fetch);
 
         // 加载尾部
         if ($footerFile) :
